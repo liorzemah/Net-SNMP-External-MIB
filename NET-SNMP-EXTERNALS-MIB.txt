@@ -25,14 +25,11 @@ netSnmpExternals MODULE-IDENTITY
 --
 -- top level structure
 --
--- netSnmpExampleScalars       OBJECT IDENTIFIER ::= { netSnmpExternals 1 }
--- netSnmpExampleTables        OBJECT IDENTIFIER ::= { netSnmpExternals 2 }
 netSnmpExternalNotifications OBJECT IDENTIFIER ::= { netSnmpExternals 3 }
 netSnmpExternalNotificationPrefix  OBJECT IDENTIFIER
                                   ::= { netSnmpExternalNotifications 0 }
 netSnmpExternalNotificationObjects OBJECT IDENTIFIER
                                   ::= { netSnmpExternalNotifications 2 }
--- netSnmpTutorial          OBJECT IDENTIFIER ::= { netSnmpExamples 4 }
 
 
 --
@@ -64,6 +61,17 @@ netSnmpNicStatusDescription OBJECT-TYPE
          and hence the cause of the heart beating faster."
 ::= { netSnmpExternalNotificationObjects 2 }
 
+netSnmpCounter OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A simple integer object, to act as a payload for the
+         netSnmpExampleHeartbeatNotification.  The value has
+         no real meaning, but is nominally the interval (in
+         seconds) between successive heartbeat notifications."
+::= { netSnmpExternalNotificationObjects 3 }
+
 netSnmpNicNotification NOTIFICATION-TYPE
     OBJECTS     { netSnmpNicStatus }
     STATUS      current
@@ -76,6 +84,19 @@ netSnmpNicNotification NOTIFICATION-TYPE
 	 30 seconds, using the code found in the example module
              agent/mibgroup/examples/notification.c"
 ::= { netSnmpExternalNotificationPrefix 1 }
+
+netSnmpCounterNotification NOTIFICATION-TYPE
+    OBJECTS     { netSnmpCounter }
+    STATUS      current
+    DESCRIPTION
+        "An example notification, used to illustrate the
+         definition and generation of trap and inform PDUs
+         (including the use of both standard and additional
+         varbinds in the notification payload).
+         This notification will typically be sent every
+	 30 seconds, using the code found in the example module
+             agent/mibgroup/examples/notification.c"
+::= { netSnmpExternalNotificationPrefix 2 }
     
 netSnmpExternalNotification OBJECT-TYPE
     SYNTAX      SnmpAdminString
@@ -87,6 +108,7 @@ netSnmpExternalNotification OBJECT-TYPE
 ::= { netSnmpExternalNotifications 1 }
 
 
+
 -- % snmptranslate -M+. -mNET-SNMP-EXTERNALS-MIB -Tp -IR netSnmpExternals
 -- +-netSnmpExternals(666)
 --    |
@@ -95,6 +117,7 @@ netSnmpExternalNotification OBJECT-TYPE
 --       +-netSnmpExternalNotificationPrefix(0)
 --       |  |
 --       |  +-netSnmpNicNotification(1)
+--	 |  +-netSnmpCounterNotification(2)
 --       |
 --       +-netSnmpExternalNotification(1)
 --       |
@@ -103,12 +126,19 @@ netSnmpExternalNotification OBJECT-TYPE
 --          +- -N Integer32 netSnmpNicStatus(1)
 --          +- -N String    netSnmpNicStatusDescription(2)
 --                   Size: 0..255
+--   	    +- -N Integer32 netSnmpCounter(3)
 
 --   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpNicStatus
 --   .1.3.6.1.4.1.8072.666.3.2.1
 
 --   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpNicNotification
 --   .1.3.6.1.4.1.8072.666.3.0.1
+
+--   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpCounter
+--   .1.3.6.1.4.1.8072.666.3.2.3
+
+--   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpCounterNotification
+--   .1.3.6.1.4.1.8072.666.3.0.2
 
 
 END
