@@ -1,0 +1,114 @@
+NET-SNMP-EXTERNALS-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Example of external MIB objects for agent module example implementations
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+    NOTIFICATION-TYPE                       FROM SNMPv2-SMI
+    netSnmp                                 FROM NET-SNMP-MIB
+;
+
+
+netSnmpExternals MODULE-IDENTITY
+    LAST-UPDATED "200406150000Z"
+    ORGANIZATION "Lior Zemah"
+    CONTACT-INFO    
+	 "author:   Lior Zemah
+          email:    liorzemah2@gmail.com"
+    DESCRIPTION
+	"Example of external MIB objects for agent module example implementations"
+    ::= { netSnmp 666 }
+
+
+--
+-- top level structure
+--
+-- netSnmpExampleScalars       OBJECT IDENTIFIER ::= { netSnmpExternals 1 }
+-- netSnmpExampleTables        OBJECT IDENTIFIER ::= { netSnmpExternals 2 }
+netSnmpExternalNotifications OBJECT IDENTIFIER ::= { netSnmpExternals 3 }
+netSnmpExternalNotificationPrefix  OBJECT IDENTIFIER
+                                  ::= { netSnmpExternalNotifications 0 }
+netSnmpExternalNotificationObjects OBJECT IDENTIFIER
+                                  ::= { netSnmpExternalNotifications 2 }
+-- netSnmpTutorial          OBJECT IDENTIFIER ::= { netSnmpExamples 4 }
+
+
+--
+--  Example Notifications
+--
+
+netSnmpNicStatus OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A simple integer object, to act as a payload for the
+         netSnmpExampleHeartbeatNotification.  The value has
+         no real meaning, but is nominally the interval (in
+         seconds) between successive heartbeat notifications."
+::= { netSnmpExternalNotificationObjects 1 }
+
+netSnmpNicStatusDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (0..255))
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A simple string object, to act as an optional payload
+         for the netSnmpExampleHeartbeatNotification.  This varbind
+         is not part of the notification definition, so is optional
+         and need not be included in the notification payload. 
+         The value has no real meaning, but the romantically inclined
+         may take it to be the object of the sender's affection,
+         and hence the cause of the heart beating faster."
+::= { netSnmpExternalNotificationObjects 2 }
+
+netSnmpNicNotification NOTIFICATION-TYPE
+    OBJECTS     { netSnmpNicStatus }
+    STATUS      current
+    DESCRIPTION
+        "An example notification, used to illustrate the
+         definition and generation of trap and inform PDUs
+         (including the use of both standard and additional
+         varbinds in the notification payload).
+         This notification will typically be sent every
+	 30 seconds, using the code found in the example module
+             agent/mibgroup/examples/notification.c"
+::= { netSnmpExternalNotificationPrefix 1 }
+    
+netSnmpExternalNotification OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      obsolete
+    DESCRIPTION
+        "This object was improperly defined for its original purpose,
+         and should no longer be used."
+::= { netSnmpExternalNotifications 1 }
+
+
+-- % snmptranslate -M+. -mNET-SNMP-EXTERNALS-MIB -Tp -IR netSnmpExternals
+-- +-netSnmpExternals(666)
+--    |
+--    +-netSnmpExternalNotifications(3)
+--       |
+--       +-netSnmpExternalNotificationPrefix(0)
+--       |  |
+--       |  +-netSnmpNicNotification(1)
+--       |
+--       +-netSnmpExternalNotification(1)
+--       |
+--       +-netSnmpExternalNotificationObjects(2)
+--         |
+--          +- -N Integer32 netSnmpNicStatus(1)
+--          +- -N String    netSnmpNicStatusDescription(2)
+--                   Size: 0..255
+
+--   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpNicStatus
+--   .1.3.6.1.4.1.8072.666.3.2.1
+
+--   % snmptranslate -On -M+. -mNET-SNMP-EXTERNALS-MIB -IR netSnmpNicNotification
+--   .1.3.6.1.4.1.8072.666.3.0.1
+
+
+END
